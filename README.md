@@ -12,8 +12,8 @@ The entire log is encoded in the URL hash (`#d=...`). No database, cookies, or l
   - Morning not given / given
   - Evening not given / given
 - The app stores a rolling 365-day window.
-- Data is packed into bytes and encoded as URL-safe Base64.
-- A small checksum is included for corruption detection.
+- Data is packed into bytes and encoded as [Base64url](https://en.wikipedia.org/wiki/Base64#URL_applications).
+- A small [checksum](https://en.wikipedia.org/wiki/Checksum) is included for corruption detection.
 
 ## Run Locally
 

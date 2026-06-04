@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dog Pill Log</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="confetti-layer" aria-hidden="true"></div>
+  <main class="app">
+    <header class="hero">
+      <h1>Dog Pill Log</h1>
+      <p>Track morning and evening pills. Data lives in the URL hash only.</p>
+    </header>
+
+    <section class="panel controls" aria-label="month navigation">
+      <div class="nav-row">
+        <button id="prev-month" type="button">Previous</button>
+        <h2 id="month-label" aria-live="polite"></h2>
+        <button id="next-month" type="button">Next</button>
+      </div>
+      <div class="action-row">
+        <button id="today" type="button">Go To Today</button>
+        <button id="copy-link" type="button">Copy Share Link</button>
+      </div>
+      <p class="hint" id="range-label"></p>
+    </section>
+
+    <section class="panel stats" aria-label="log summary">
+      <p id="summary"></p>
+      <p id="url-size"></p>
+      <p id="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel table-wrap" aria-label="daily log">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Morning</th>
+            <th scope="col">Evening</th>
+            <th scope="col">Daily Status</th>
+          </tr>
+        </thead>
+        <tbody id="log-body"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

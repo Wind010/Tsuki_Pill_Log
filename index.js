@@ -2,6 +2,8 @@ const WINDOW_MONTHS = 12;
 const VERSION = 1;
 const HASH_PREFIX = "#d=";
 const URL_WARN_AT = 1800;
+const RLE_PREFIX = "r.";
+const RLE_ESCAPE = "~";
 
 const logBody = document.getElementById("log-body");
 const monthLabel = document.getElementById("month-label");
@@ -106,6 +108,74 @@ function base64UrlToBytes(text) {
   return bytes;
 }
 
+function isDigitChar(char) {
+  return char >= "0" && char <= "9";
+}
+
+function rleEncode(text) {
+  if (!text) return "";
+
+  let encoded = "";
+  for (let i = 0; i < text.length; ) {
+    const char = text[i];
+    let runEnd = i + 1;
+    while (runEnd < text.length && text[runEnd] === char) {
+      runEnd += 1;
+    }
+
+    const runLength = runEnd - i;
+    if (runLength === 1) {
+      encoded += isDigitChar(char) ? `${RLE_ESCAPE}${char}` : char;
+    } else {
+      encoded += `${char}${runLength}`;
+    }
+
+    i = runEnd;
+  }
+
+  return encoded;
+}
+
+function rleDecode(text) {
+  if (!text) return "";
+
+  let decoded = "";
+  for (let i = 0; i < text.length; i += 1) {
+    let char = text[i];
+
+    if (char === RLE_ESCAPE) {
+      i += 1;
+      if (i >= text.length) {
+        throw new Error("Invalid RLE escape sequence.");
+      }
+      char = text[i];
+      decoded += char;
+      continue;
+    }
+
+    let numberStart = i + 1;
+    let numberEnd = numberStart;
+    while (numberEnd < text.length && isDigitChar(text[numberEnd])) {
+      numberEnd += 1;
+    }
+
+    if (numberEnd === numberStart) {
+      decoded += char;
+      continue;
+    }
+
+    const count = Number(text.slice(numberStart, numberEnd));
+    if (!Number.isInteger(count) || count < 2) {
+      throw new Error("Invalid RLE count.");
+    }
+
+    decoded += char.repeat(count);
+    i = numberEnd - 1;
+  }
+
+  return decoded;
+}
+
 function encodeState(current) {
   const packed = packStatuses(current.statuses);
   const headerLen = 1 + 4 + 2;
@@ -130,11 +200,16 @@ function encodeState(current) {
   bytes[totalNoChecksum] = (sum >>> 8) & 0xff;
   bytes[totalNoChecksum + 1] = sum & 0xff;
 
-  return bytesToBase64Url(bytes);
+  const base64 = bytesToBase64Url(bytes);
+  return `${RLE_PREFIX}${rleEncode(base64)}`;
 }
 
 function decodeState(encoded) {
-  const bytes = base64UrlToBytes(encoded);
+  const base64 = encoded.startsWith(RLE_PREFIX)
+    ? rleDecode(encoded.slice(RLE_PREFIX.length))
+    : encoded;
+
+  const bytes = base64UrlToBytes(base64);
   if (bytes.length < 9) {
     throw new Error("Encoded data is too short.");
   }
